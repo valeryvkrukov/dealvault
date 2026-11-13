@@ -1,0 +1,6 @@
+login.staff_title: "Authentification du Personnel"
+login.founder_title: "Accès au Portail Fondateur"
+login.email_label: "Adresse Électronique"
+login.password_label: "Mot de Passe Sécurisé"
+login.submit_btn: "Se Connecter"
+login.error_invalid: "Identifiants invalides."

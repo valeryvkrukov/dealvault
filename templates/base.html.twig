@@ -1,22 +1,105 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{ app.request.locale }}">
     <head>
         <meta charset="UTF-8">
-        <title>{% block title %}Welcome!{% endblock %}</title>
+        <title>{% block title %}DealVault{% endblock %}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
+        <style>
+            :root {
+                --bg-elevation-0: #0d0e12; /* Main background */
+                --bg-elevation-1: #161820; /* Background of cards and panels */
+                --bg-elevation-2: #222533; /* Input fields, buttons, etc. */
+                --text-primary: #f3f4f6;
+                --text-muted: #9ca3af;
+                --accent-color: #3b82f6;
+                --border-color: #2d3142;
+                --font-size-base: 16px;
+            }
+
+            body {
+                background-color: var(--bg-elevation-0);
+                color: var(--text-primary);
+                font-family: system-ui, -apple-system, sans-serif;
+                font-size: var(--font-size-base);
+                margin: 0;
+                padding: 0;
+                display: flex;
+                min-height: 100vh;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .card-elevation-1 {
+                background-color: var(--bg-elevation-1);
+                border: 1px solid var(--border-color);
+                border-radius: 8px;
+                padding: 32px;
+                width: 100%;
+                max-width: 400px;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            }
+
+            .form-group {
+                margin-bottom: 20px;
+            }
+
+            .form-label {
+                display: block;
+                margin-bottom: 8px;
+                color: var(--text-muted);
+                font-size: 0.9rem;
+            }
+
+            .input-elevation-2 {
+                width: 100%;
+                box-sizing: border-box;
+                background-color: var(--bg-elevation-2);
+                border: 1px solid var(--border-color);
+                border-radius: 6px;
+                padding: 12px;
+                color: var(--text-primary);
+                font-size: var(--font-size-base);
+            }
+
+            .input-elevation-2:focus {
+                outline: none;
+                border-color: var(--accent-color);
+            }
+
+            .btn-accent {
+                width: 100%;
+                background-color: var(--accent-color);
+                color: #ffffff;
+                border: none;
+                border-radius: 6px;
+                padding: 12px;
+                font-size: var(--font-size-base);
+                font-weight: 600;
+                cursor: pointer;
+                transition: background-color 0.2s;
+            }
+
+            .btn-accent:hover {
+                background-color: #2563eb;
+            }
+
+            .error-banner {
+                background-color: #7f1d1d;
+                border: 1px solid #f87171;
+                color: #fca5a5;
+                padding: 12px;
+                border-radius: 6px;
+                margin-bottom: 20px;
+                font-size: 0.9rem;
+            }
+        </style>
+
         {% block stylesheets %}
         {% endblock %}
 
         {% block javascripts %}
-            {% block importmap %}{{ importmap('app') }}{% endblock %}
         {% endblock %}
-
-        {% set frankenphp_hot_reload = app.request.server.get('FRANKENPHP_HOT_RELOAD') %}
-        {% if frankenphp_hot_reload %}
-        <meta name="frankenphp-hot-reload:url" content="{{ frankenphp_hot_reload }}">
-        <script src="https://cdn.jsdelivr.net/npm/idiomorph"></script>
-        <script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
-        {% endif %}
     </head>
     <body>
         {% block body %}{% endblock %}
