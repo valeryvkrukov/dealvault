@@ -1,9 +1,9 @@
 
 services:
 ###> doctrine/doctrine-bundle ###
-  database:
+  postgres:
     ports:
-      - "5432"
+      - "5412"
 ###< doctrine/doctrine-bundle ###
 
 ###> symfony/mailer ###

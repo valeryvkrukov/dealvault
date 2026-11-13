@@ -14,11 +14,15 @@ doctrine:
             Doctrine\DBAL\Platforms\PostgreSQLPlatform: identity
         auto_mapping: true
         mappings:
-            App:
+            DealVault:
                 type: attribute
                 is_bundle: false
                 dir: '%kernel.project_dir%/src/Entity'
-                prefix: 'App\Entity'
+                prefix: 'DealVault\Entity'
+        filters:
+            tenant_filter:
+                class: DealVault\Shared\MultiTenancy\Doctrine\TenantFilter
+                enabled: true
 
 when@test:
     doctrine:

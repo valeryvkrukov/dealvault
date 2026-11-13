@@ -55,12 +55,12 @@
     },
     "autoload": {
         "psr-4": {
-            "App\\": "src/"
+            "DealVault\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "App\\Tests\\": "tests/"
+            "DealVault\\Tests\\": "tests/"
         }
     },
     "replace": {
