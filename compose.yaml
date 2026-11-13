@@ -26,7 +26,7 @@ services:
       POSTGRES_USER: dealvault_user
       POSTGRES_PASSWORD: dealvault_pass
     ports:
-      - "5412:5412"
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data:rw
 

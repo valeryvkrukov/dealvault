@@ -17,8 +17,15 @@ doctrine:
             DealVault:
                 type: attribute
                 is_bundle: false
-                dir: '%kernel.project_dir%/src/Entity'
-                prefix: 'DealVault\Entity'
+                dir: '%kernel.project_dir%/src/Identity/Entity'
+                prefix: 'DealVault\Identity\Entity'
+                alias: Identity
+            Shared:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Shared/Entity'
+                prefix: 'DealVault\Shared\Entity'
+                alias: Shared
         filters:
             tenant_filter:
                 class: DealVault\Shared\MultiTenancy\Doctrine\TenantFilter
