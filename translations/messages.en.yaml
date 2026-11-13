@@ -1,0 +1,6 @@
+login.staff_title: "Staff Authentication"
+login.founder_title: "Founder Portal Access"
+login.email_label: "Email Address"
+login.password_label: "Secure Password"
+login.submit_btn: "Sign In"
+login.error_invalid: "Invalid credentials."
