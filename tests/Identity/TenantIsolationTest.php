@@ -6,10 +6,10 @@ use DealVault\Identity\Entity\Tenant;
 use DealVault\Identity\Entity\StaffUser;
 use DealVault\Shared\Entity\AuditLog;
 use Doctrine\DBAL\Exception;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Doctrine\ORM\EntityManagerInterface;
 
-class TenantIsolationTest extends WebTestCase
+class TenantIsolationTest extends KernelTestCase
 {
     private ?EntityManagerInterface $entityManager = null;
 
