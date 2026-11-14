@@ -26,3 +26,7 @@ services:
     DealVault\Ingestion\MessageHandler\ProcessDocumentHandler:
         bind:
             $storageDir: '%kernel.project_dir%'
+
+    DealVault\Ingestion\Service\ClaudeExtractor:
+        arguments:
+            $anthropicKey: '%env(ANTHROPIC_API_KEY)%'
