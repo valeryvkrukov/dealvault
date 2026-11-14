@@ -35,3 +35,6 @@ services:
 
     DealVault\ReviewQueue\Service\ReviewQueueManager:
         public: true
+
+    DealVault\Portfolio\Service\CompletenessEngine:
+        public: true

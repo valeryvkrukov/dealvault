@@ -44,6 +44,12 @@ doctrine:
                 dir: '%kernel.project_dir%/src/ReviewQueue/Entity'
                 prefix: 'DealVault\ReviewQueue\Entity'
                 alias: ReviewQueue
+            Portfolio:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Portfolio/Entity'
+                prefix: 'DealVault\Portfolio\Entity'
+                alias: Portfolio
         filters:
             tenant_filter:
                 class: DealVault\Shared\MultiTenancy\Doctrine\TenantFilter

@@ -3,6 +3,7 @@
 namespace DealVault\ReviewQueue\Entity;
 
 use DealVault\Identity\Entity\Tenant;
+use DealVault\Portfolio\Entity\PortfolioCompany;
 use DealVault\Shared\MultiTenancy\TenantAwareInterface;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -20,8 +21,9 @@ class PortfolioClaim implements TenantAwareInterface
     #[ORM\JoinColumn(name: 'tenant_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private Tenant $tenant;
 
-    #[ORM\Column(type: 'uuid')]
-    private string $companyId;
+    #[ORM\ManyToOne(targetEntity: PortfolioCompany::class)]
+    #[ORM\JoinColumn(name: 'company_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
+    private PortfolioCompany $company;
 
     #[ORM\Column(type: 'string', length: 100)]
     private string $metricName;
@@ -43,14 +45,14 @@ class PortfolioClaim implements TenantAwareInterface
 
     public function __construct(
         Tenant $tenant,
-        string $companyId,
+        PortfolioCompany $company,
         string $metricName,
         string $period,
         string $currency = 'USD'
     )
     {
         $this->tenant = $tenant;
-        $this->companyId = $companyId;
+        $this->company = $company;
         $this->metricName = $metricName;
         $this->period = $period;
         $this->currency = $currency;
@@ -77,9 +79,9 @@ class PortfolioClaim implements TenantAwareInterface
         return $this->tenant;
     }
 
-    public function getCompanyId(): string
+    public function getCompany(): PortfolioCompany
     {
-        return $this->companyId;
+        return $this->company;
     }
 
     public function getMetricName(): string
