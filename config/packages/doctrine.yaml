@@ -38,6 +38,12 @@ doctrine:
                 dir: '%kernel.project_dir%/src/Ingestion/Entity'
                 prefix: 'DealVault\Ingestion\Entity'
                 alias: Ingestion
+            ReviewQueue:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/ReviewQueue/Entity'
+                prefix: 'DealVault\ReviewQueue\Entity'
+                alias: ReviewQueue
         filters:
             tenant_filter:
                 class: DealVault\Shared\MultiTenancy\Doctrine\TenantFilter
