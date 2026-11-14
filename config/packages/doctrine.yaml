@@ -26,6 +26,18 @@ doctrine:
                 dir: '%kernel.project_dir%/src/Shared/Entity'
                 prefix: 'DealVault\Shared\Entity'
                 alias: Shared
+            Identity:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Identity/Entity'
+                prefix: 'DealVault\Identity\Entity'
+                alias: Identity
+            Ingestion:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Ingestion/Entity'
+                prefix: 'DealVault\Ingestion\Entity'
+                alias: Ingestion
         filters:
             tenant_filter:
                 class: DealVault\Shared\MultiTenancy\Doctrine\TenantFilter

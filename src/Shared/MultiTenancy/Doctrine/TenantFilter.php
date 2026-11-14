@@ -19,6 +19,12 @@ class TenantFilter extends SQLFilter
             return '';
         }
 
-        return sprintf('%s.tenant_id = %s', $targetTableAlias, $this->getParameter('tenant_id'));
+        try {
+            $tenantId = $this->getParameter('tenant_id');
+        } catch (\InvalidArgumentException $e) {
+            return '';
+        }
+
+        return sprintf('%s.tenant_id = %s', $targetTableAlias, $tenantId);
     }
 }
