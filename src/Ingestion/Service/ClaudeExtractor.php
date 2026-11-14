@@ -15,10 +15,10 @@ class ClaudeExtractor
     private HttpClientInterface $httpClient;
     private string $apiKey;
 
-    public function __construct(HttpClientInterface $httpClient, string $apiKey)
+    public function __construct(HttpClientInterface $httpClient, string $anthropicKey)
     {
         $this->httpClient = $httpClient;
-        $this->apiKey = $apiKey;
+        $this->apiKey = $anthropicKey;
     }
 
     public function extractMetrics(IngestionSource $source): array
