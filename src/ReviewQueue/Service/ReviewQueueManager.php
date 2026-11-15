@@ -4,6 +4,7 @@ namespace DealVault\ReviewQueue\Service;
 
 use DealVault\Identity\Entity\Tenant;
 use DealVault\Ingestion\Entity\IngestionSource;
+use DealVault\Portfolio\Entity\PortfolioCompany;
 use DealVault\ReviewQueue\Entity\PortfolioClaim;
 use DealVault\ReviewQueue\Entity\ClaimRevision;
 use Doctrine\ORM\EntityManagerInterface;
@@ -17,7 +18,11 @@ class ReviewQueueManager
         $this->entityManager = $entityManager;
     }
 
-    public function stageExtractedMetrics(IngestionSource $source, string $companyId, array $extractedMetrics): void
+    public function stageExtractedMetrics(
+        IngestionSource $source,
+        PortfolioCompany $company,
+        array $extractedMetrics
+    ): void
     {
         $tenantId = $source->getTenantId();
         $tenantReference = $this->entityManager->getRepository(Tenant::class)->find($tenantId);
@@ -26,7 +31,7 @@ class ReviewQueueManager
             // Finding for metric in fund by given period
             $claim = $this->entityManager->getRepository(PortfolioClaim::class)->findOneBy([
                 'tenant' => $tenantId,
-                'companyId' => $companyId,
+                'company' => $company,
                 'period' => $metric['period']
             ]);
 
@@ -34,7 +39,7 @@ class ReviewQueueManager
                 // If metric not found, create a new claim
                 $claim = new PortfolioClaim(
                     $tenantReference,
-                    $companyId,
+                    $company,
                     $metric['metric_name'],
                     $metric['period'],
                     $metric['currency'] ?? 'USD'

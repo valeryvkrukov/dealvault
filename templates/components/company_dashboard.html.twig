@@ -1,0 +1,80 @@
+<div {{ attributes }} class="dashboard-container">
+    <!-- Report Period Selector -->
+    <div class="toolbar" style="margin-bottom: 24px; display: flex; gap: 12px; align-items: center;">
+        <span style="color: var(--text-muted);">Reporting Period:</span>
+        <select data-model="selectedPeriod" class="input-elevation-2" style="width: auto; padding: 8px 16px;">
+            <option value="2026-Q1">2026-Q1</option>
+            <option value="2026-Q2">2026-Q2</option>
+            <option value="2026-Q3">2026-Q3</option>
+            <option value="2026-Q4">2026-Q4</option>
+        </select>
+
+        <span class="loading-indicator" data-loading="show" style="color: var(--accent-color); font-size: 0.9rem;">
+            Updating metrics...
+        </span>
+    </div>
+
+    <!-- Interactive B2B-table -->
+    <table style="width: 100%; border-collapse: separate; border-spacing: 0 8px;">
+        <thead>
+            <tr style="text-align: left; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">
+                <th style="padding: 12px;">Company</th>
+                <th style="padding: 12px;">Lifecycle</th>
+                <th style="padding: 12px;">Reporting Status</th>
+                <th style="padding: 12px;">Metrics Overview</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in this.companies %}
+            <tr style="background-color: var(--bg-elevation-1); transition: background-color 0.2s;">
+                <td style="padding: 16px; border-radius: 6px 0 0 6px; font-weight: 600;">
+                    <a href="#" style="color: var(--text-primary); text-decoration: none; border-bottom: 1px dashed var(--border-color);">
+                        {{ row.entity.name }}
+                    </a>
+                </td>
+                <td style="padding: 16px;">
+                    <span style="font-size: 0.85rem; background-color: var(--bg-elevation-2); padding: 4px 8px; border-radius: 4px;">
+                        {{ row.entity.lifecycleState }}
+                    </span>
+                </td>
+                <td style="padding: 16px;">
+                    <!-- Determined statues of reporting -->
+                    {% if row.status == 'Validated' %}
+                        <span style="color: #34d399; font-weight: 600;">✓ Validated</span>
+                    {% elseif row.status == 'Conflicting' %}
+                        <span style="color: #f87171; font-weight: 600;">⚠ Conflicting</span>
+                    {% else %}
+                        <span style="color: #fbbf24; font-weight: 600;">⟳ Incomplete</span>
+                    {% endif %}
+                </td>
+                <td style="padding: 16px; border-radius: 0 6px 6px 0;">
+                    <!-- The grid of field indicators for quick overview -->
+                    <div style="display: flex; gap: 8px;">
+                        {% for metric, state in row.reportCard %}
+                            <div title="{{ metric|upper }}: {{ state }}" style="
+                                padding: 4px 8px;
+                                border-radius: 4px;
+                                font-size: 0.75rem;
+                                font-weight: bold;
+                                background-color: {% if state == 'Validated' %}#064e3b{% elseif state == 'Conflicting' %}#7f1d1d{% else %}#78350f{% endif %};
+                                color: {% if state == 'Validated' %}#34d399{% elseif state == 'Conflicting' %}#f87171{% else %}#fbbf24{% endif %};
+                                border: 1px solid var(--border-color);
+                                ">
+                                {{ metric|upper }}
+                        {% else %}
+                            <span style="color: var(--text-muted); font-size: 0.85rem;">No metric requirements defined</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+                <tr>
+                    <td colspan="4" style="padding: 32px; text-align: center; color: var(--text-muted);">
+                        No portfolio companies found for active tenant.
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
