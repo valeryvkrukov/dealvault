@@ -23,43 +23,36 @@ doctrine:
                 is_bundle: false
                 dir: '%kernel.project_dir%/src/Identity/Entity'
                 prefix: 'DealVault\Identity\Entity'
-                alias: Identity
             Shared:
                 type: attribute
                 is_bundle: false
                 dir: '%kernel.project_dir%/src/Shared/Entity'
                 prefix: 'DealVault\Shared\Entity'
-                alias: Shared
             Identity:
                 type: attribute
                 is_bundle: false
                 dir: '%kernel.project_dir%/src/Identity/Entity'
                 prefix: 'DealVault\Identity\Entity'
-                alias: Identity
             Ingestion:
                 type: attribute
                 is_bundle: false
                 dir: '%kernel.project_dir%/src/Ingestion/Entity'
                 prefix: 'DealVault\Ingestion\Entity'
-                alias: Ingestion
             ReviewQueue:
                 type: attribute
                 is_bundle: false
                 dir: '%kernel.project_dir%/src/ReviewQueue/Entity'
                 prefix: 'DealVault\ReviewQueue\Entity'
-                alias: ReviewQueue
             Portfolio:
                 type: attribute
                 is_bundle: false
                 dir: '%kernel.project_dir%/src/Portfolio/Entity'
                 prefix: 'DealVault\Portfolio\Entity'
-                alias: Portfolio
             Dealflow:
                 type: attribute
                 is_bundle: false
                 dir: '%kernel.project_dir%/src/Dealflow/Entity'
                 prefix: 'DealVault\Dealflow\Entity'
-                alias: Dealflow
         filters:
             tenant_filter:
                 class: DealVault\Shared\MultiTenancy\Doctrine\TenantFilter
