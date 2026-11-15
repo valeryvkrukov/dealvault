@@ -41,3 +41,6 @@ services:
 
     DealVault\Portfolio\Service\ActionDraftFactory:
         public: true
+
+    DealVault\Dealflow\Service\StageHistoryManager:
+        public: true
