@@ -13,6 +13,10 @@ doctrine:
         identity_generation_preferences:
             Doctrine\DBAL\Platforms\PostgreSQLPlatform: identity
         auto_mapping: true
+        dql:
+            string_functions:
+                JSONB_GET_TEXT: DealVault\Shared\Doctrine\Query\JsonbGetText
+                CAST_NUMERIC: DealVault\Shared\Doctrine\Query\CastNumeric
         mappings:
             DealVault:
                 type: attribute
@@ -50,6 +54,12 @@ doctrine:
                 dir: '%kernel.project_dir%/src/Portfolio/Entity'
                 prefix: 'DealVault\Portfolio\Entity'
                 alias: Portfolio
+            Dealflow:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Dealflow/Entity'
+                prefix: 'DealVault\Dealflow\Entity'
+                alias: Dealflow
         filters:
             tenant_filter:
                 class: DealVault\Shared\MultiTenancy\Doctrine\TenantFilter
