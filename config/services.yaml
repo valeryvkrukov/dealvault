@@ -38,3 +38,6 @@ services:
 
     DealVault\Portfolio\Service\CompletenessEngine:
         public: true
+
+    DealVault\Portfolio\Service\ActionDraftFactory:
+        public: true
