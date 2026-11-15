@@ -6,26 +6,57 @@ security:
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
         users_in_memory: { memory: null }
+        staff_provider:
+            entity:
+                class: DealVault\Identity\Entity\StaffUser
+                property: email
+        founder_provider:
+            entity:
+                class: DealVault\Identity\Entity\FounderUser
+                property: email
 
     firewalls:
         dev:
             # Ensure dev tools and static assets are always allowed
             pattern: ^/(_profiler(/|$)|(_wdt|assets|build)/)
             security: false
-        main:
-            lazy: true
-            provider: users_in_memory
+        #main:
+        #    lazy: true
+        #    provider: users_in_memory
 
             # Activate different ways to authenticate:
             # https://symfony.com/doc/current/security.html#the-firewall
 
             # https://symfony.com/doc/current/security/impersonating_user.html
             # switch_user: true
+        founder:
+            pattern: ^/founder
+            lazy: true
+            provider: founder_provider
+            custom_authenticator: DealVault\Identity\Security\FounderAuthenticator
+            logout:
+                path: founder_logout
+                target: founder_login
+        staff:
+            pattern: ^/
+            lazy: true
+            provider: staff_provider
+            form_login:
+                login_path: staff_login
+                check_path: staff_login
+                enable_csrf: true
+                username_parameter: _email
+                password_parameter: _password
+            logout:
+                path: staff_logout
+                target: staff_login
 
     # Note: Only the *first* matching rule is applied
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/founder/login, roles: PUBLIC_ACCESS }
+        - { path: ^/founder, roles: ROLE_FOUNDER }
+        - { path: ^/login, roles: PUBLIC_ACCESS }
+        - { path: ^/, roles: ROLE_USER }
 
 when@test:
     security:
