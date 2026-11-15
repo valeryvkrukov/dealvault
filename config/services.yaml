@@ -44,3 +44,6 @@ services:
 
     DealVault\Dealflow\Service\StageHistoryManager:
         public: true
+
+    DealVault\Ingestion\Service\MailpitClient:
+        public: true
