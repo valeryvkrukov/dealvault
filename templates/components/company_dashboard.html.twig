@@ -10,71 +10,91 @@
         </select>
 
         <span class="loading-indicator" data-loading="show" style="color: var(--accent-color); font-size: 0.9rem;">
-            Updating metrics...
+            Saving revision and recalculating completeness...
         </span>
     </div>
 
     <!-- Interactive B2B-table -->
     <table style="width: 100%; border-collapse: separate; border-spacing: 0 8px;">
         <thead>
-            <tr style="text-align: left; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">
-                <th style="padding: 12px;">Company</th>
-                <th style="padding: 12px;">Lifecycle</th>
-                <th style="padding: 12px;">Reporting Status</th>
-                <th style="padding: 12px;">Metrics Overview</th>
+            <tr style="text-align: left; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                <th style="padding: 12px 16px;">Company Name</th>
+                <th style="padding: 12px 16px;">Reporting Status</th>
+                <th style="padding: 12px 16px;">ARR (USD)</th>
+                <th style="padding: 12px 16px;">Headcount</th>
             </tr>
         </thead>
         <tbody>
-            {% for row in this.companies %}
-            <tr style="background-color: var(--bg-elevation-1); transition: background-color 0.2s;">
+        {% for row in this.companies %}
+            <tr style="background-color: var(--bg-elevation-1); box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: background-color 0.2s;">
                 <td style="padding: 16px; border-radius: 6px 0 0 6px; font-weight: 600;">
-                    <a href="#" style="color: var(--text-primary); text-decoration: none; border-bottom: 1px dashed var(--border-color);">
-                        {{ row.entity.name }}
-                    </a>
+                    <span style="color: var(--text-primary);">{{ row.entity.name }}</span>
                 </td>
                 <td style="padding: 16px;">
-                    <span style="font-size: 0.85rem; background-color: var(--bg-elevation-2); padding: 4px 8px; border-radius: 4px;">
-                        {{ row.entity.lifecycleState }}
-                    </span>
-                </td>
-                <td style="padding: 16px;">
-                    <!-- Determined statues of reporting -->
                     {% if row.status == 'Validated' %}
-                        <span style="color: #34d399; font-weight: 600;">✓ Validated</span>
+                        <span style="color: #34d399; font-size: 0.9rem; font-weight: 600;">✓ Validated</span>
                     {% elseif row.status == 'Conflicting' %}
-                        <span style="color: #f87171; font-weight: 600;">⚠ Conflicting</span>
+                        <span style="color: #f87171; font-size: 0.9rem; font-weight: 600;">⚠ Conflicting</span>
                     {% else %}
-                        <span style="color: #fbbf24; font-weight: 600;">⟳ Incomplete</span>
+                        <span style="color: #fbbf24; font-size: 0.9rem; font-weight: 600;">⟳ Incomplete</span>
                     {% endif %}
                 </td>
-                <td style="padding: 16px; border-radius: 0 6px 6px 0;">
-                    <!-- The grid of field indicators for quick overview -->
-                    <div style="display: flex; gap: 8px;">
-                        {% for metric, state in row.reportCard %}
-                            <div title="{{ metric|upper }}: {{ state }}" style="
-                                padding: 4px 8px;
-                                border-radius: 4px;
-                                font-size: 0.75rem;
-                                font-weight: bold;
-                                background-color: {% if state == 'Validated' %}#064e3b{% elseif state == 'Conflicting' %}#7f1d1d{% else %}#78350f{% endif %};
-                                color: {% if state == 'Validated' %}#34d399{% elseif state == 'Conflicting' %}#f87171{% else %}#fbbf24{% endif %};
-                                border: 1px solid var(--border-color);
-                                ">
-                                {{ metric|upper }}
+
+                <!-- Inline-edit cells -->
+                {% for metricName in ['arr', 'headcount'] %}
+                    <td style="padding: 16px; {% if loop.last %}border-radius: 0 6px 6px 0;{% endif %}">
+                        {% if row.metrics[metricName] is defined %}
+                            {% set metric = row.metrics[metricName] %}
+
+                            {% if this.editingClaimId == metric.claimId and metric.claimId is not null %}
+                                <!-- Inline edit input -->
+                                <input type="number"
+                                       data-model="editingValue"
+                                       data-action="blur->live#action"
+                                       data-live-action-param="saveInlineEdit"
+                                       data-action-keydown.enter="blur"
+                                       class="input-elevation-2"
+                                       style="padding: 6px 12px; width: 140px; font-weight: bold; border-color: var(--accent-color);"
+                                       autofocus>
+                            {% else %}
+                                <!-- Simple display of metric with completion indicator -->
+                                <div data-action="click->live#action"
+                                     data-live-action-param="startEditing"
+                                     data-live-claim-id-param="{{ metric.claimId ?? '' }}"
+                                     data-live-current-value-param="{{ metric.value }}"
+                                     style="
+                                         display: inline-block;
+                                         padding: 6px 12px;
+                                         border-radius: 4px;
+                                         font-weight: 700;
+                                         cursor: {% if metric.claimId %}pointer{% else %}default{% endif %};
+                                         background-color: {% if metric.state == 'Validated' %}#064e3b{% elseif metric.state == 'Conflicting' %}#7f1d1d{% else %}#78350f{% endif %};
+                                         color: {% if metric.state == 'Validated' %}#34d399{% elseif metric.state == 'Conflicting' %}#f87171{% else %}#fbbf24{% endif %};
+                                         border: 1px solid var(--border-color);
+                                         transition: transform 0.1s;
+                                         "
+                                     class="metric-badge"
+                                     title="Click to edit value manually">
+                                    {% if metric.state == 'Missing' %}
+                                        Missing
+                                    {% else %}
+                                        {{ metric.value|number_format(0, '.', ',') }}
+                                    {% endif %}
+                                </div>
+                            {% endif %}
                         {% else %}
-                            <span style="color: var(--text-muted); font-size: 0.85rem;">No metric requirements defined</span>
-                            </div>
-                        {% endfor %}
-                    </div>
+                            <span style="color: var(--text-muted); font-size: 0.85rem;">—</span>
+                        {% endif %}
+                    </td>
+                {% endfor %}
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="4" style="padding: 32px; text-align: center; color: var(--text-muted);">
+                    No portfolio companies found for active tenant.
                 </td>
             </tr>
-            {% else %}
-                <tr>
-                    <td colspan="4" style="padding: 32px; text-align: center; color: var(--text-muted);">
-                        No portfolio companies found for active tenant.
-                    </td>
-                </tr>
-            {% endfor %}
+        {% endfor %}
         </tbody>
     </table>
 </div>
