@@ -17,4 +17,14 @@ class DashboardController extends AbstractController
 
         return $this->render('portfolio/dashboard.html.twig');
     }
+
+    #[Route('/dashboard/review', name: 'staff_review_queue')]
+    public function reviewQueue(): Response
+    {
+        if (!$this->getUser()) {
+            return $this->redirectToRoute('staff_login');
+        }
+
+        return $this->render('portfolio/review_queue.html.twig');
+    }
 }
