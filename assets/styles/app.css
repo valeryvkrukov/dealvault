@@ -73,7 +73,7 @@ body {
     border-left-color: var(--accent-color);
 }
 
-/* Контентная область */
+/* --- STYLES OF THE CONTENT AREA --- */
 .main-content {
     margin-left: 260px;
     padding: 40px;
@@ -97,7 +97,7 @@ body {
     font-weight: 800;
 }
 
-/* Элементы ввода */
+/* Elements of input */
 .input-elevation-2 {
     background-color: var(--bg-main);
     border: 1px solid var(--border-color);
@@ -113,7 +113,7 @@ body {
     outline: none;
 }
 
-/* --- СТИЛИ ДАШБОРДА (PORTFOLIO) --- */
+/* --- STYLES OF THE DASHBOARD (PORTFOLIO) --- */
 .dashboard-container { width: 100%; }
 .dashboard-toolbar { margin-bottom: 24px; display: flex; gap: 12px; align-items: center; }
 .dashboard-toolbar-label { color: var(--text-muted); font-size: 0.8rem; }
@@ -125,7 +125,7 @@ body {
 .badge-conflicting { color: var(--color-conflicting); border-color: var(--color-conflicting); }
 .badge-missing { color: var(--color-missing); border-color: var(--color-missing); }
 
-/* --- СТИЛИ ОЧЕРЕДИ ВЕРИФИКАЦИИ (REVIEW QUEUE) --- */
+/* --- STYLES OF THE REVIEW QUEUE --- */
 .review-queue-title { margin: 0 0 20px 0; font-size: 1.1rem; font-weight: 700; }
 .review-queue-list { display: flex; flex-direction: column; gap: 24px; }
 .review-card { background-color: var(--bg-sidebar); border: 1px solid var(--border-color); padding: 24px; display: flex; flex-direction: column; gap: 20px; }
@@ -143,9 +143,9 @@ body {
 .btn-action-approve { background-color: #064e3b; color: #34d399; border: 1px solid #047857; padding: 10px 16px; font-weight: bold; cursor: pointer; font-family: inherit; font-size: 0.8rem; }
 .btn-action-reject { background-color: #7f1d1d; color: #f87171; border: 1px solid #b91c1c; padding: 10px 16px; font-weight: bold; cursor: pointer; font-family: inherit; font-size: 0.8rem; }
 
-/* --- СТИЛИ КАНБАН-ДОСКИ (DEALFLOW) --- */
+/* --- STYLES OF THE KANBAN BOARD (DEALFLOW) --- */
 .kanban-board-container {
-    display: flex !important; /* Принудительно включаем flex-ряд */
+    display: flex !important;
     flex-direction: row !important;
     gap: 20px;
     overflow-x: auto;
