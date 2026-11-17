@@ -2,6 +2,7 @@
 
 namespace DealVault\Dealflow\Twig\Components;
 
+use DealVault\Dealflow\Entity\CustomFieldDefinition;
 use DealVault\Dealflow\Entity\Deal;
 use DealVault\Dealflow\Entity\StageEvent;
 use DealVault\Dealflow\Service\StageHistoryManager;
@@ -10,6 +11,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\Attribute\LiveAction;
 use Symfony\UX\LiveComponent\Attribute\LiveArg;
+use Symfony\UX\LiveComponent\Attribute\LiveProp;
 use Symfony\UX\LiveComponent\DefaultActionTrait;
 
 #[AsLiveComponent('kanban_board')]
@@ -29,6 +31,16 @@ class KanbanBoardComponent
         'due_diligence' => 'Due Diligence',
         'ic' => 'Investment Committee'
     ];
+
+    // State of Inline editing of a custom deal field in the UI
+    #[LiveProp(writable: true)]
+    public ?string $editingDealId = null;
+
+    #[LiveProp(writable: true)]
+    public ?string $editingFieldKey = null;
+
+    #[LiveProp(writable: true)]
+    public string $editingCustomValue = '';
 
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -54,13 +66,24 @@ class KanbanBoardComponent
     }
 
     /**
+     * Returns custom fields configuration for Kanban board
+     */
+    public function getCustomFieldsConfiguration(): array
+    {
+        return $this->entityManager->getRepository(CustomFieldDefinition::class)->findBy(
+            ['isRetired' => false],
+            ['fieldName' => 'ASC']
+        );
+    }
+
+    /**
      * Groups deals of the current fund by Kanban stages
      */
     public function getColumns(): array
     {
         $dealRepository = $this->entityManager->getRepository(Deal::class);
-        $board = [];
 
+        $board = [];
         foreach (self::STAGES as $stageKey => $stageName) {
             $deals = $dealRepository->findBy(['status' => $stageKey], ['createdAt' => 'DESC']);
             $dealsWithMetrics = [];
@@ -79,7 +102,6 @@ class KanbanBoardComponent
                     'daysSpent' => $daysSpent
                 ];
             }
-
             $board[$stageKey] = [
                 'name' => $stageName,
                 'deals' => $dealsWithMetrics
@@ -105,5 +127,39 @@ class KanbanBoardComponent
             // Call our domain manager: it will atomically close the old stage and open a new StageEvent
             $this->stageHistoryManager->transitionToStage($deal, $targetStage);
         }
+    }
+
+    #[LiveAction]
+    public function startEditingCustomField(
+        #[LiveArg] string $dealId,
+        #[LiveArg] string $fieldKey,
+        #[LiveArg] string $currentValue
+    ): void
+    {
+        $this->editingDealId = $dealId;
+        $this->editingFieldKey = $fieldKey;
+        $this->editingCustomValue = $currentValue;
+    }
+
+    #[LiveAction]
+    public function saveCustomFieldValue(): void
+    {
+        if (!$this->editingDealId || !$this->editingFieldKey) {
+            return;
+        }
+
+        /** @var Deal|null $deal */
+        $deal = $this->entityManager->getRepository(Deal::class)->find($this->editingDealId);
+
+        if ($deal !== null) {
+            // Write the value directly into the JSONB dictionary of the Deal entity
+            $deal->setCustomValue($this->editingFieldKey, $this->editingCustomValue);
+            $this->entityManager->flush();
+        }
+
+        // Reset editing mode
+        $this->editingDealId = null;
+        $this->editingFieldKey = null;
+        $this->editingCustomValue = '';
     }
 }

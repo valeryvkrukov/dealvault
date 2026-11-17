@@ -1,4 +1,6 @@
 <div {{ attributes }} class="kanban-board-container">
+    {% set customFields = this.customFieldsConfiguration %}
+
     {% for stageKey, column in this.columns %}
         <div class="kanban-column">
             <!-- Title of the stage -->
@@ -23,6 +25,46 @@
                             <div class="kanban-card-amount">
                                 Seeking: {{ card.entity.amountSought|number_format(0, '.', ',') }} {{ card.entity.currency }}
                             </div>
+                        {% endif %}
+
+                        <!-- Custom fields -->
+                        {% if customFields is not empty %}
+                        <div class="kanban-custom-fields-area">
+                            {% for field in customFields %}
+                                {% set valueMap = card.entity.customValues %}
+                                {% set currentValue = valueMap[field.fieldKey] ?? '' %}
+
+                            <div class="kanban-custom-field-row">
+                                <span>{{ field.fieldName }}:</span>
+
+                                {% if this.editingDealId == card.entity.id and this.editingFieldKey == field.fieldKey %}
+                                    <!-- TODO: Should be changed to a real input -->
+                                    <input type="text"
+                                           data-model="editingCustomValue"
+                                           data-action="blur->live#action"
+                                           data-live-action-param="saveCustomFieldValue"
+                                           data-action-keydown.enter="blur"
+                                           class="input-elevation-2"
+                                           style="padding: 2px 6px; font-size: 0.8rem; width: 100px; border-color: var(--accent-color);"
+                                           autofocus>
+                                {% else %}
+                                    <span data-action="click->live#action"
+                                          data-live-action-param="startEditingCustomField"
+                                          data-live-deal-id-param="{{ card.entity.id }}"
+                                          data-live-field-key-param="{{ field.fieldKey }}"
+                                          data-live-current-value-param="{{ currentValue }}"
+                                          class="kanban-custom-field-value"
+                                          title="Click to change value inside JSONB">
+                                        {% if currentValue is empty %}
+                                            <span style="color: var(--text-muted); font-style: italic; font-weight: normal;">set...</span>
+                                        {% else %}
+                                            {{ currentValue }}
+                                        {% endif %}
+                                    </span>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
                         {% endif %}
 
                         <!-- Time metric of the stage -->

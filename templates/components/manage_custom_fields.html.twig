@@ -1,0 +1,40 @@
+<div {{ attributes }} class="review-card" style="margin-bottom: 32px;">
+    <!-- Form for custom meta-field -->
+    <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; align-items: flex-end;">
+        <div style="flex: 1; min-width: 150px;">
+            <label class="dashboard-toolbar-label" style="display: block; margin-bottom: 4px;">Field System Key:</label>
+            <input type="text" data-model="fieldKey" class="input-elevation-2" style="width: 100%;" placeholder="e.g. ticket_size">
+        </div>
+        <div style="flex: 1; min-width: 180px;">
+            <label class="dashboard-toolbar-label" style="display: block; margin-bottom: 4px;">Human Readable Name:</label>
+            <input type="text" data-model="fieldName" class="input-elevation-2" style="width: 100%;" placeholder="e.g. Target Ticket Size">
+        </div>
+        <div style="flex: 1; min-width: 120px;">
+            <label class="dashboard-toolbar-label" style="display: block; margin-bottom: 4px;">Data Type:</label>
+            <select data-model="fieldType" class="input-elevation-2" style="width: 100%; padding: 7px 12px;">
+                <option value="text">Text / String</option>
+                <option value="number">Number / Numeric</option>
+                <option value="date">Date</option>
+                <option value="yes_no">Yes / No (Boolean)</option>
+            </select>
+        </div>
+        <button data-action="live#action" data-live-action-param="saveDefinition" class="input-elevation-2 btn-action-approve" style="padding: 9px 20px; height: 38px;">
+            + Deploy Field
+        </button>
+    </div>
+
+    <!-- List of existing dynamic JSONB fields -->
+    <div style="border-top: 1px solid var(--border-color); padding-top: 16px;">
+        <span class="dashboard-toolbar-label" style="display: block; margin-bottom: 10px; font-weight: bold;">Active Dynamic Fields Configuration:</span>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            {% for def in this.definitions %}
+                <div class="input-elevation-2" style="background-color: var(--bg-main); display: flex; gap: 12px; align-items: center; padding: 6px 12px;">
+                    <span style="font-size: 0.85rem;"><strong>{{ def.fieldName }}</strong> (<span style="color: var(--accent-color)">{{ def.fieldType }}</span>)</span>
+                    <button data-action="live#action" data-live-action-param="retireField" data-live-id-param="{{ def.id }}" style="background: none; border: none; color: #f87171; cursor: pointer; font-size: 0.8rem; padding: 0;" title="Retire Field">✕</button>
+                </div>
+            {% else %}
+                <span class="dashboard-toolbar-label" style="font-style: italic;">No custom fields built yet. Use form above to inject dynamic JSONB structure.</span>
+            {% endfor %}
+        </div>
+    </div>
+</div>

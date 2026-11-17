@@ -22,6 +22,10 @@
             </div>
         </div>
 
+        <!-- Include the component for managing custom fields -->
+        {{ component('manage_custom_fields') }}
+
+        <!-- Include the component for the reactive Kanban board -->
         {{ component('kanban_board') }}
     </div>
 {% endblock %}

@@ -381,3 +381,31 @@ body {
     padding: 4px 8px;
     font-weight: 600;
 }
+
+.kanban-custom-fields-area {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.kanban-custom-field-row {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.kanban-custom-field-value {
+    color: var(--text-primary);
+    font-weight: 600;
+    cursor: pointer;
+    background-color: var(--bg-elevation-2);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid transparent;
+}
+.kanban-custom-field-value:hover {
+    border-color: var(--accent-color);
+}
