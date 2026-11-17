@@ -1,48 +1,48 @@
 <div {{ attributes }} class="dashboard-container">
     <!-- Report Period Selector -->
-    <div class="toolbar" style="margin-bottom: 24px; display: flex; gap: 12px; align-items: center;">
-        <span style="color: var(--text-muted);">Reporting Period:</span>
-        <select data-model="selectedPeriod" class="input-elevation-2" style="width: auto; padding: 8px 16px;">
+    <div class="dashboard-toolbar">
+        <span class="dashboard-toolbar-label">Reporting Period:</span>
+        <select data-model="selectedPeriod" class="input-elevation-2 dashboard-select">
             <option value="2026-Q1">2026-Q1</option>
             <option value="2026-Q2">2026-Q2</option>
             <option value="2026-Q3">2026-Q3</option>
             <option value="2026-Q4">2026-Q4</option>
         </select>
 
-        <span class="loading-indicator" data-loading="show" style="color: var(--accent-color); font-size: 0.9rem;">
+        <span class="dashboard-loading" data-loading="show">
             Saving revision and recalculating completeness...
         </span>
     </div>
 
     <!-- Interactive B2B-table -->
-    <table style="width: 100%; border-collapse: separate; border-spacing: 0 8px;">
+    <table class="dashboard-table">
         <thead>
-            <tr style="text-align: left; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">
-                <th style="padding: 12px 16px;">Company Name</th>
-                <th style="padding: 12px 16px;">Reporting Status</th>
-                <th style="padding: 12px 16px;">ARR (USD)</th>
-                <th style="padding: 12px 16px;">Headcount</th>
+            <tr>
+                <th class="dashboard-table-th">Company Name</th>
+                <th class="dashboard-table-th">Reporting Status</th>
+                <th class="dashboard-table-th">ARR (USD)</th>
+                <th class="dashboard-table-th">Headcount</th>
             </tr>
         </thead>
         <tbody>
         {% for row in this.companies %}
-            <tr style="background-color: var(--bg-elevation-1); box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: background-color 0.2s;">
-                <td style="padding: 16px; border-radius: 6px 0 0 6px; font-weight: 600;">
-                    <span style="color: var(--text-primary);">{{ row.entity.name }}</span>
+            <tr class="dashboard-table-tr">
+                <td class="dashboard-td-company">
+                    <span>{{ row.entity.name }}</span>
                 </td>
-                <td style="padding: 16px;">
+                <td class="dashboard-td-status">
                     {% if row.status == 'Validated' %}
-                        <span style="color: #34d399; font-size: 0.9rem; font-weight: 600;">✓ Validated</span>
+                        <span class="status-validated">✓ Validated</span>
                     {% elseif row.status == 'Conflicting' %}
-                        <span style="color: #f87171; font-size: 0.9rem; font-weight: 600;">⚠ Conflicting</span>
+                        <span class="status-conflicting">⚠ Conflicting</span>
                     {% else %}
-                        <span style="color: #fbbf24; font-size: 0.9rem; font-weight: 600;">⟳ Incomplete</span>
+                        <span class="status-incomplete">⟳ Incomplete</span>
                     {% endif %}
                 </td>
 
                 <!-- Inline-edit cells -->
                 {% for metricName in ['arr', 'headcount'] %}
-                    <td style="padding: 16px; {% if loop.last %}border-radius: 0 6px 6px 0;{% endif %}">
+                    <td class="dashboard-td-metric {% if loop.last %}dashboard-td-metric-last{% endif %}">
                         {% if row.metrics[metricName] is defined %}
                             {% set metric = row.metrics[metricName] %}
 
@@ -53,8 +53,7 @@
                                        data-action="blur->live#action"
                                        data-live-action-param="saveInlineEdit"
                                        data-action-keydown.enter="blur"
-                                       class="input-elevation-2"
-                                       style="padding: 6px 12px; width: 140px; font-weight: bold; border-color: var(--accent-color);"
+                                       class="input-elevation-2 dashboard-metric-input"
                                        autofocus>
                             {% else %}
                                 <!-- Simple display of metric with completion indicator -->
@@ -62,19 +61,9 @@
                                      data-live-action-param="startEditing"
                                      data-live-claim-id-param="{{ metric.claimId ?? '' }}"
                                      data-live-current-value-param="{{ metric.value }}"
-                                     style="
-                                         display: inline-block;
-                                         padding: 6px 12px;
-                                         border-radius: 4px;
-                                         font-weight: 700;
-                                         cursor: {% if metric.claimId %}pointer{% else %}default{% endif %};
-                                         background-color: {% if metric.state == 'Validated' %}#064e3b{% elseif metric.state == 'Conflicting' %}#7f1d1d{% else %}#78350f{% endif %};
-                                         color: {% if metric.state == 'Validated' %}#34d399{% elseif metric.state == 'Conflicting' %}#f87171{% else %}#fbbf24{% endif %};
-                                         border: 1px solid var(--border-color);
-                                         transition: transform 0.1s;
-                                         "
-                                     class="metric-badge"
-                                     title="Click to edit value manually">
+                                     class="metric-badge-clickable {% if metric.state == 'Validated' %}badge-validated{% elseif metric.state == 'Conflicting' %}badge-conflicting{% else %}badge-missing{% endif %}"
+                                     title="Click to edit value manually"
+                                >
                                     {% if metric.state == 'Missing' %}
                                         Missing
                                     {% else %}
@@ -83,14 +72,14 @@
                                 </div>
                             {% endif %}
                         {% else %}
-                            <span style="color: var(--text-muted); font-size: 0.85rem;">—</span>
+                            <span class="dashboard-toolbar-label">—</span>
                         {% endif %}
                     </td>
                 {% endfor %}
             </tr>
         {% else %}
             <tr>
-                <td colspan="4" style="padding: 32px; text-align: center; color: var(--text-muted);">
+                <td colspan="4" class="review-queue-empty">
                     No portfolio companies found for active tenant.
                 </td>
             </tr>

@@ -113,6 +113,11 @@ class Deal implements TenantAwareInterface
         return $this;
     }
 
+    public function getCurrency(): string
+    {
+        return $this->currency;
+    }
+
     public function getCustomValues(): array
     {
         return $this->customValues ?? [];

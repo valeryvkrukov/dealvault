@@ -27,4 +27,14 @@ class DashboardController extends AbstractController
 
         return $this->render('portfolio/review_queue.html.twig');
     }
+
+    #[Route('/dashboard/dealflow', name: 'staff_dealflow_kanban')]
+    public function dealflowKanban(): Response
+    {
+        if (!$this->getUser()) {
+            return $this->redirectToRoute('staff_login');
+        }
+
+        return $this->render('portfolio/dealflow_kanban.html.twig');
+    }
 }

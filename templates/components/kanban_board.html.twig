@@ -1,0 +1,80 @@
+<div {{ attributes }} class="kanban-board-container">
+    {% for stageKey, column in this.columns %}
+        <div class="kanban-column">
+            <!-- Title of the stage -->
+            <div class="kanban-column-header">
+                <h3 class="kanban-column-title">
+                    {{ column.name }}
+                </h3>
+                <span class="kanban-column-counter">
+                    {{ column.deals|length }}
+                </span>
+            </div>
+
+            <!-- Card for each deal in the stage -->
+            <div class="kanban-cards-list">
+                {% for card in column.deals %}
+                    <div class="kanban-card">
+                        <div class="kanban-card-title">
+                            {{ card.entity.companyName }}
+                        </div>
+
+                        {% if card.entity.amountSought %}
+                            <div class="kanban-card-amount">
+                                Seeking: {{ card.entity.amountSought|number_format(0, '.', ',') }} {{ card.entity.currency }}
+                            </div>
+                        {% endif %}
+
+                        <!-- Time metric of the stage -->
+                        <div class="kanban-card-footer">
+                            <div>
+                                ⏳ <strong>{{ card.daysSpent }}</strong> days spent
+                            </div>
+
+                            <!-- Button to move to the next stage -->
+                            <div class="kanban-actions-gap">
+                                {% if stageKey != 'mapped' %}
+                                    <button
+                                        data-action="live#action"
+                                        data-live-action-param="moveDeal"
+                                        data-live-deal-id-param="{{ card.entity.id }}"
+                                        data-live-target-stage-param="mapped"
+                                    >⏮</button>
+                                {% endif %}
+                                {% if stageKey == 'mapped' %}
+                                    <button
+                                        data-action="live#action"
+                                        data-live-action-param="moveDeal"
+                                        data-live-deal-id-param="{{ card.entity.id }}"
+                                        data-live-target-stage-param="to_analyse"
+                                    >Next ➔</button>
+                                {% elseif stageKey == 'to_analyse' %}
+                                    <button
+                                        data-action="live#action"
+                                        data-live-action-param="moveDeal"
+                                        data-live-deal-id-param="{{ card.entity.id }}"
+                                        data-live-target-stage-param="first_call"
+                                    >Next ➔</button>
+                                {% elseif stageKey == 'first_call' %}
+                                    <button
+                                        data-action="live#action"
+                                        data-live-action-param="moveDeal"
+                                        data-live-deal-id-param="{{ card.entity.id }}"
+                                        data-live-target-stage-param="due_diligence"
+                                    >Next ➔</button>
+                                {% elseif stageKey == 'due_diligence' %}
+                                    <button
+                                        data-action="live#action"
+                                        data-live-action-param="moveDeal"
+                                        data-live-deal-id-param="{{ card.entity.id }}"
+                                        data-live-target-stage-param="ic"
+                                    >Next ➔</button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
+</div>
