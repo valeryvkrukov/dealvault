@@ -1,97 +1,75 @@
 <div {{ attributes }} class="dashboard-container">
-    <h2 class="review-queue-title">
-        Pending Data Verification Queue
-    </h2>
+    <h2 class="review-queue-title">Pending Data Verification Queue</h2>
 
     {% set claims = this.pendingClaims %}
 
     {% if claims is empty %}
-    <div class="review-queue-empty">
-        🎉 Excellent! The review queue is empty. All AI-extracted financial data has been verified.
-    </div>
+        <div class="review-queue-empty">
+            🎉 Excellent! The review queue is empty. All AI-extracted financial data has been verified.
+        </div>
     {% else %}
-    <div class="review-queue-list">
-        {% for claim in claims %}
-            {% set revisions = this.getRevisionsForClaim(claim) %}
-            {% set activeRevision = revisions|first %}
+        <div class="review-queue-list">
+            {% for claim in claims %}
+                {% set revisions = this.getRevisionsForClaim(claim) %}
+                {% set activeRevision = revisions|first %}
 
-            <div class="review-card {% if claim.status == 'conflicting' %}review-card-conflict{% endif %}">
-                <!-- Claim card header -->
-                <div class="review-card-header">
-                    <div>
-                        <span class="review-card-company">
-                            {{ claim.company.name }}
-                        </span>
-                        <span class="review-card-meta">
-                            Period: <strong>{{ claim.period }}</strong> | Metric: <span class="metric-badge" style="background-color: var(--bg-elevation-2); padding: 2px 6px; border-radius: 4px;">{{ claim.metricName|upper }}</span>
-                        </span>
+                <div class="review-card {% if claim.status == 'conflicting' %}review-card-conflict{% endif %}">
+                    <div class="review-card-header">
+                        <div>
+                            <span class="review-card-company">{{ claim.company.name }}</span>
+                            <span class="review-card-meta">
+                                Period: <strong>{{ claim.period }}</strong> | Metric: <span class="input-elevation-2" style="padding: 2px 6px;">{{ claim.metricName|upper }}</span>
+                            </span>
+                        </div>
+                        <div>
+                            {% if claim.status == 'conflicting' %}
+                                <span class="review-card-badge-conflict">⚠ Data Conflict ({{ revisions|length }} Sources)</span>
+                            {% else %}
+                                <span class="review-card-badge-staged">Staged From AI</span>
+                            {% endif %}
+                        </div>
                     </div>
-                    <div>
+
+                    <div class="review-card-body">
                         {% if claim.status == 'conflicting' %}
-                        <span class="review-card-badge-conflict">
-                            ⚠ Data Conflict ({{ revisions|length }} Sources)
-                        </span>
+                            {% for rev in revisions %}
+                                <div class="conflict-split-box">
+                                    <div>
+                                        <div class="dashboard-toolbar-label" style="margin-bottom: 8px;">Source file: <strong>{{ rev.source.fileName }}</strong></div>
+                                        <div class="conflict-value">
+                                            {{ rev.extractedValue|number_format(2, '.', ',') }} <span style="font-size: 0.9rem; font-weight: normal; color: var(--text-muted)">{{ claim.currency }}</span>
+                                        </div>
+                                        <blockquote class="review-evidence-quote">
+                                            "{{ rev.sourceLocatorExcerpt ?? 'No excerpt available in source file.' }}"
+                                        </blockquote>
+                                    </div>
+                                    <button data-action="live#action" data-live-action-param="acceptRevision" data-live-claim-id-param="{{ claim.id }}" data-live-revision-id-param="{{ rev.id }}" class="input-elevation-2 btn-action-approve" style="margin-top: 16px; width: 100%;">Accept This Version</button>
+                                </div>
+                            {% endfor %}
                         {% else %}
-                        <span class="review-card-badge-staged">
-                            Staged From AI
-                        </span>
+                            {% if activeRevision %}
+                                <div class="single-review-left">
+                                    <div class="dashboard-toolbar-label" style="margin-bottom: 4px;">Extracted Value:</div>
+                                    <div class="single-review-value">
+                                        {{ activeRevision.extractedValue|number_format(2, '.', ',') }} <span style="font-size: 1rem; font-weight: normal; color: var(--text-muted)">{{ claim.currency }}</span>
+                                    </div>
+                                    <div class="dashboard-toolbar-label" style="margin-bottom: 6px;">AI Evidence Context (Excerpt):</div>
+                                    <blockquote class="single-review-quote">
+                                        "{{ activeRevision.sourceLocatorExcerpt ?? 'No text excerpt extracted by AI model.' }}"
+                                    </blockquote>
+                                </div>
+
+                                <div class="single-review-right-actions">
+                                    <button data-action="live#action" data-live-action-param="acceptRevision" data-live-claim-id-param="{{ claim.id }}" data-live-revision-id-param="{{ activeRevision.id }}" class="input-elevation-2 btn-action-approve">✓ Approve Value</button>
+                                    <button data-action="live#action" data-live-action-param="rejectClaim" data-live-claim-id-param="{{ claim.id }}" class="input-elevation-2 btn-action-reject">✕ Reject Fact</button>
+                                </div>
+                            {% else %}
+                                <div class="dashboard-toolbar-label" style="font-style: italic; padding: 12px;">No active revisions generated for this staged claim.</div>
+                            {% endif %}
                         {% endif %}
                     </div>
                 </div>
-
-                <!-- Contents part: display revisions and Evidence -->
-                <div class="review-card-body">
-                    {% if claim.status == 'conflicting' %}
-                        {% for rev in revisions %}
-                        <div class="conflict-split-box">
-                            <div>
-                                <div class="dashboard-toolbar-label" style="margin-bottom: 8px;">Source file: <strong>{{ rev.source.fileName }}</strong></div>
-                                <div class="conflict-value">
-                                    {{ rev.extractedValue|number_format(2, '.', ',') }} <span style="font-size: 0.9rem; font-weight: normal; color: var(--text-muted)">{{ claim.currency }}</span>
-                                </div>
-                                <blockquote class="review-evidence-quote">
-                                    "{{ rev.sourceLocatorExcerpt ?? 'No excerpt available in source file.' }}"
-                                </blockquote>
-                            </div>
-                            <button data-action="live#action"
-                                data-live-action-param="acceptRevision"
-                                data-live-claim-id-param="{{ claim.id }}"
-                                data-live-revision-id-param="{{ rev.id }}"
-                                class="input-elevation-2 btn-action-approve"
-                                style="margin-top: 16px; width: 100%;"
-                            >
-                                Accept This Version
-                            </button>
-                        </div>
-                        {% endfor %}
-                    {% else %}
-                        <div class="single-review-left">
-                            <div class="dashboard-toolbar-label" style="margin-bottom: 4px;">Extracted Value:</div>
-                            <div class="single-review-value">
-                                {{ activeRevision.extractedValue|number_format(2, '.', ',') }} <span style="font-size: 1rem; font-weight: normal; color: var(--text-muted)">{{ claim.currency }}</span>
-                            </div>
-                            <div class="dashboard-toolbar-label" style="margin-bottom: 6px;">AI Evidence Context (Excerpt):</div>
-                            <blockquote class="single-review-quote">
-                                "{{ activeRevision.sourceLocatorExcerpt ?? 'No text excerpt extracted by AI model.' }}"
-                            </blockquote>
-                        </div>
-                        <div class="single-review-right-actions">
-                            <button data-action="live#action"
-                                    data-live-action-param="acceptRevision"
-                                    data-live-claim-id-param="{{ claim.id }}"
-                                    data-live-revision-id-param="{{ activeRevision.id }}"
-                                    class="input-elevation-2 btn-action-approve"
-                            >✓ Approve Value</button>
-                            <button data-action="live#action"
-                                    data-live-action-param="rejectClaim"
-                                    data-live-claim-id-param="{{ claim.id }}"
-                                    class="input-elevation-2 btn-action-reject"
-                            >✕ Reject Fact</button>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-        {% endfor %}
-    </div>
+            {% endfor %}
+        </div>
     {% endif %}
 </div>

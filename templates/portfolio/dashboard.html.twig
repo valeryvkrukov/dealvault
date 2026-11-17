@@ -1,16 +1,7 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Portfolio Intelligence - DealVault{% endblock %}
-
 {% block body %}
-<div style="width: 100%; max-width: 1200px; margin: 0 auto; padding: 40px 20px; align-self: flex-start;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px;">
-        <h1 style="margin: 0; font-size: 1.75rem; font-weight: 700; letter-spacing: -0.025em;">Portfolio Intelligence</h1>
-        <div style="color: var(--text-muted); font-size: 0.9rem;">
-            Authenticated as: <span style="color: var(--text-primary); font-weight: 600;">{{ app.user.userIdentifier }}</span>
-        </div>
-    </div>
+    <h2 style="margin-top:0; font-size:1.1rem; letter-spacing:0.05em; color:var(--text-muted); text-transform:uppercase;">Portfolio Intelligence Platform</h2>
 
     {{ component('company_dashboard') }}
-</div>
 {% endblock %}

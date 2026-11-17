@@ -61,11 +61,13 @@
                                      data-live-action-param="startEditing"
                                      data-live-claim-id-param="{{ metric.claimId ?? '' }}"
                                      data-live-current-value-param="{{ metric.value }}"
+                                     data-live-company-id-param="{{ row.entity.id }}"
+                                     data-live-metric-name-param="{{ metricName }}"
                                      class="metric-badge-clickable {% if metric.state == 'Validated' %}badge-validated{% elseif metric.state == 'Conflicting' %}badge-conflicting{% else %}badge-missing{% endif %}"
-                                     title="Click to edit value manually"
+                                     title="Click to insert missing metric"
                                 >
                                     {% if metric.state == 'Missing' %}
-                                        Missing
+                                        + INSERT
                                     {% else %}
                                         {{ metric.value|number_format(0, '.', ',') }}
                                     {% endif %}

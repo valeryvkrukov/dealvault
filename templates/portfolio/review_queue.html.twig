@@ -1,25 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Review Queue - DealVault{% endblock %}
-
 {% block body %}
-    <div style="width: 100%; max-width: 1200px; margin: 0 auto; padding: 40px 20px; align-self: flex-start;">
-        <!-- Top navigation panel -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px;">
-            <div style="display: flex; gap: 24px; align-items: center;">
-                <h1 style="margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--text-muted);">
-                    <a href="{{ path('staff_dashboard') }}" style="color: inherit; text-decoration: none;">Portfolio Intelligence</a>
-                </h1>
-                <h1 style="margin: 0; font-size: 1.5rem; font-weight: 700; border-bottom: 2px solid var(--accent-color); padding-bottom: 14px;">
-                    <a href="#" style="color: var(--text-primary); text-decoration: none;">Review Queue</a>
-                </h1>
-            </div>
-            <div style="color: var(--text-muted); font-size: 0.9rem;">
-                Role: <span style="color: var(--accent-color); font-weight: 600;">Data Reviewer</span>
-            </div>
-        </div>
-
-        <!-- Inject reactive component of rewiew queue -->
-        {{ component('review_queue') }}
-    </div>
+    <h2 class="page-title-meta">Data Operations // <span>Human-In-The-Loop Verification</span></h2>
+    {{ component('review_queue') }}
 {% endblock %}

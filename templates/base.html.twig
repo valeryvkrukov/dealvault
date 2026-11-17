@@ -9,6 +9,16 @@
         {{ importmap('app') }}
     </head>
     <body>
-        {% block body %}{% endblock %}
+        <div class="sidebar">
+            <div class="sidebar-brand">DEALVAULT // CORE</div>
+            <nav class="sidebar-menu">
+                <a href="{{ path('staff_dashboard') }}" class="sidebar-link {% if app.request.attributes.get('_route') == 'staff_dashboard' %}active{% endif %}">■ PORTFOLIO</a>
+                <a href="{{ path('staff_review_queue') }}" class="sidebar-link {% if app.request.attributes.get('_route') == 'staff_review_queue' %}active{% endif %}">■ REVIEW QUEUE</a>
+                <a href="{{ path('staff_dealflow_kanban') }}" class="sidebar-link {% if app.request.attributes.get('_route') == 'staff_dealflow_kanban' %}active{% endif %}">■ DEALFLOW BOARD</a>
+            </nav>
+        </div>
+        <div class="main-content">
+            {% block body %}{% endblock %}
+        </div>
     </body>
 </html>

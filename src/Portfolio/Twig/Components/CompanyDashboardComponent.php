@@ -2,11 +2,13 @@
 
 namespace DealVault\Portfolio\Twig\Components;
 
+use DealVault\Ingestion\Entity\IngestionSource;
 use DealVault\Portfolio\Entity\PortfolioCompany;
 use DealVault\Portfolio\Service\CompletenessEngine;
 use DealVault\ReviewQueue\Entity\ClaimRevision;
 use DealVault\ReviewQueue\Entity\PortfolioClaim;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\UnitOfWork;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\Attribute\LiveProp;
@@ -98,10 +100,31 @@ class CompanyDashboardComponent
 
     #[LiveAction]
     public function startEditing(
-        #[LiveArg] string $claimId,
-        #[LiveArg] float $currentValue
+        #[LiveArg] ?string $claimId,
+        #[LiveArg] float $currentValue,
+        #[LiveArg] ?string $companyId = null,
+        #[LiveArg] ?string $metricName = null
     ): void
     {
+        if (!$claimId && $companyId && $metricName) {
+            /** @var PortfolioCompany $company */
+            $company = $this->entityManager->getRepository(PortfolioCompany::class)->find($companyId);
+            $user = $this->security->getUser();
+
+            if ($company !== null && $user !== null && method_exists($user, 'getTenant')) {
+                // Create record claim "on the fly"
+                $newClaim = new PortfolioClaim($user->getTenant(), $company, $metricName, $this->selectedPeriod);
+                $newClaim->setStatus('staged');
+                $this->entityManager->persist($newClaim);
+                $this->entityManager->flush();
+
+                $this->editingClaimId = $newClaim->getId();
+                $this->editingValue = 0.00;
+
+                return;
+            }
+        }
+
         $this->editingClaimId = $claimId;
         $this->editingValue = $currentValue;
     }
@@ -122,27 +145,41 @@ class CompanyDashboardComponent
             $userEmail = $this->security->getUser() ? $this->security->getUser()->getUserIdentifier() : 'analyst@horizon.com';
 
             // For manual edit simulate a fake source or bind to an existing one
-            $activeRevision = $this->entityManager->getRepository(ClaimRevision::class)->find($claim->getActiveRevisionId());
+            $activeRevision = null;
+            if ($claim->getActiveRevisionId() !== null) {
+                $activeRevision = $this->entityManager->getRepository(ClaimRevision::class)->find($claim->getActiveRevisionId());
+            }
             $source = $activeRevision ? $activeRevision->getSource() : null;
 
-            if ($source !== null) {
-                $newRevision = new ClaimRevision($claim, $source, $this->editingValue, 'manual_entry');
-                $newRevision->setReviewStatus('accepted');
-                $newRevision->setPreviousRevisionId($activeRevision?->getId());
+            if ($source === null) {
+                $source = $this->entityManager->getRepository(IngestionSource::class)->findOneBy([]) ?? new IngestionSource($claim->getTenant(), 'manual');
 
-                // Write the email of the reviewer using Reflection or setter
-                $reflection = new \ReflectionClass($newRevision);
-                $property = $reflection->getProperty('reviewedBy');
-                $property->setValue($newRevision, $userEmail);
-
-                $this->entityManager->persist($newRevision);
-                $this->entityManager->flush();
-
-                // Switch the active revision pointer to the newly created manual entry
-                $claim->setActiveRevisionId($newRevision->getId());
-                $claim->setStatus('validated'); // After manual editing by the analyst, the status becomes validated
-                $this->entityManager->flush();
+                if ($this->entityManager->getUnitOfWork()->getEntityState($source) === UnitOfWork::STATE_NEW) {
+                    $this->entityManager->persist($source);
+                    $this->entityManager->flush();
+                }
             }
+
+            $newRevision = new ClaimRevision($claim, $source, (float)$this->editingValue, 'manual_entry');
+            $newRevision->setReviewStatus('accepted');
+            $newRevision->setSourceLocatorExcerpt('Manually entered by analyst via corporate dashboard.');
+
+            if ($activeRevision !== null) {
+                $newRevision->setPreviousRevisionId($activeRevision->getId());
+            }
+
+            // Fix the reviewer author
+            $reflection = new \ReflectionClass($newRevision);
+            $property = $reflection->getProperty('reviewedBy');
+            $property->setValue($newRevision, $userEmail);
+
+            $this->entityManager->persist($newRevision);
+            $this->entityManager->flush();
+
+            // Switch the active revision pointer to the newly created manual entry and activate the validated status
+            $claim->setActiveRevisionId($newRevision->getId());
+            $claim->setStatus('validated');
+            $this->entityManager->flush();
         }
 
         // Reset editing mode in the interface
