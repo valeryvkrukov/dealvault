@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="{{ app.request.locale }}">
+    <head>
+        <meta charset="UTF-8">
+        <title>Founder Auth - DealVault</title>
+        <style>
+            body { background-color: #0b0f19; color: #f9fafb; font-family: monospace; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+            .login-card { background-color: #111827; border: 1px solid #374151; padding: 32px; width: 320px; box-sizing: border-box; }
+            input { width: 100%; padding: 8px; margin: 8px 0 16px 0; background: #0b0f19; border: 1px solid #374151; color: white; box-sizing: border-box; font-family: inherit; }
+            button { width: 100%; padding: 10px; background: #3b82f6; border: none; color: white; font-weight: bold; cursor: pointer; font-family: inherit; }
+        </style>
+    </head>
+    <body>
+        <form action="{{ path('founder_login') }}" method="POST" class="login-card">
+            <h3 style="margin-top:0; letter-spacing:1px; font-size: 0.95rem;">FOUNDER SIGN IN</h3>
+        
+            <label style="font-size: 0.8rem; color: #9ca3af;">Email:</label>
+            <input type="email" name="_email" value="elon@spacex.com" required autofocus>
+        
+            <label style="font-size: 0.8rem; color: #9ca3af;">Password:</label>
+            <input type="password" name="_password" value="founder123" required>
+        
+            <input type="hidden" name="_csrf_token" value="skip_csrf_in_test">
+            <button type="submit">AUTHENTICATE</button>
+        </form>
+    </body>
+</html>

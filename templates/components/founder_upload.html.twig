@@ -1,0 +1,58 @@
+<div {{ attributes }}>
+
+    <!-- Flash messages output from the controller -->
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="review-card {% if label == 'error' %}review-card-conflict{% endif %}" style="padding: 16px; margin-bottom: 20px; font-weight: bold; color: {% if label == 'error' %}var(--color-conflicting){% else %}var(--color-validated){% endif %};">
+                {{ label == 'error' ? '✕' : '✓' }} {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <!-- Classic native form for file uploads without AJAX collisions -->
+    <form action="{{ path('founder_file_upload') }}" method="POST" enctype="multipart/form-data">
+        <div class="dropzone-area">
+            <div class="dropzone-title">Drag & Drop Financial Statement here</div>
+            <div class="dashboard-toolbar-label" style="margin-bottom: 20px;">Supported formats: PDF, XLSX, CSV (Max 10MB)</div>
+
+            <input type="file" name="report_file" class="input-elevation-2" style="margin-bottom: 16px;" required>
+            <br>
+            <button type="submit" class="btn-action-approve" style="background-color: var(--accent-color); border-color: var(--accent-color); color: white; cursor: pointer;">
+                ↑ Dispatch Report to Fund
+            </button>
+        </div>
+    </form>
+
+    <!-- History of uploaded documents -->
+    <h3 class="kanban-column-title" style="margin-bottom: 16px; margin-top: 40px;">Historical Uploads Registry</h3>
+    <table class="dashboard-table">
+        <thead>
+            <tr>
+                <th>Document File Name</th>
+                <th>Upload Timestamp</th>
+                <th>Pipeline Processing Status</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for doc in this.uploadHistory %}
+            <tr>
+                <td style="font-weight: bold;">{{ doc.fileName }}</td>
+                <td class="dashboard-toolbar-label">{{ doc.createdAt|date('Y-m-d H:i:s') }}</td>
+                <td>
+                    {% if doc.status == 'extracted' %}
+                        <span class="status-badge-extracted">✓ Extracted</span>
+                    {% else %}
+                        <span class="status-badge-queued">⟳ In Queue</span>
+                    {% endif %}
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="3" class="dashboard-toolbar-label" style="text-align: center; padding: 24px; font-style: italic;">
+                    No documents dispatched yet. Use zone above to send your first financial report.
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>

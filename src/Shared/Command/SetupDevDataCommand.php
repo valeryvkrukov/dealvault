@@ -2,6 +2,8 @@
 
 namespace DealVault\Shared\Command;
 
+use DateMalformedStringException;
+use DealVault\Identity\Entity\FounderUser;
 use DealVault\Identity\Entity\Tenant;
 use DealVault\Identity\Entity\StaffUser;
 use DealVault\Portfolio\Entity\PortfolioCompany;
@@ -27,25 +29,37 @@ class SetupDevDataCommand extends Command
     private EntityManagerInterface $entityManager;
     private UserPasswordHasherInterface $passwordHasher;
 
-    public function __construct(EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordHasher)
+    public function __construct(
+        EntityManagerInterface $entityManager,
+        UserPasswordHasherInterface $passwordHasher
+    )
     {
         parent::__construct();
+
         $this->entityManager = $entityManager;
         $this->passwordHasher = $passwordHasher;
     }
 
+    /**
+     * @throws DateMalformedStringException
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        // 1. Create a test fund
+        // 1. DATA FOR FUND
         $tenant = new Tenant('Horizon Venture Capital');
         $this->entityManager->persist($tenant);
 
-        // 2. Create a fund employee (password: 'password')
+        // 2. DATA FOR STAFF USER OF FUND
         $user = new StaffUser($tenant, 'analyst@horizon.com', 'Senior Analyst', 'ROLE_ADMIN');
         $user->setPassword($this->passwordHasher->hashPassword($user, 'password'));
         $this->entityManager->persist($user);
 
-        // 3. Core sources of documents
+        // 3. DATA FOR FOUNDING USER
+        $founder = new FounderUser($tenant, 'elon@spacex.com');
+        $founder->setPassword($this->passwordHasher->hashPassword($founder, 'founder123'));
+        $this->entityManager->persist($founder);
+
+        // 4. DATA FOR INGESTION SOURCES
         $sourceA = new IngestionSource($tenant, 'file');
         $sourceA->setSha256(hash('sha256', 'Financial Statement Document Alpha'));
         $sourceA->setFileName('q3_official_report.pdf');
@@ -58,7 +72,7 @@ class SetupDevDataCommand extends Command
         $sourceB->setStatus('extracted');
         $this->entityManager->persist($sourceB);
 
-        // 4. Portfolio Company 1: Validated
+        // 5. DATA FOR PORTFOLIO COMPANY 1
         $comp1 = new PortfolioCompany($tenant, 'Skyline Automation');
         $this->entityManager->persist($comp1);
         $this->createRequirement($comp1, 'arr');
@@ -72,15 +86,7 @@ class SetupDevDataCommand extends Command
         $this->entityManager->persist($rev1);
         $claim1->setActiveRevisionId($rev1->getId());
 
-        $claim1H = new PortfolioClaim($tenant, $comp1, 'headcount', '2026-Q3');
-        $claim1H->setStatus('validated');
-        $this->entityManager->persist($claim1H);
-        $rev1H = new ClaimRevision($claim1H, $sourceA, 42.00, 'ai_claude');
-        $rev1H->setReviewStatus('accepted');
-        $this->entityManager->persist($rev1H);
-        $claim1H->setActiveRevisionId($rev1H->getId());
-
-        // Portfolio Company 2: Conflict of sources
+        // 6. DATA FOR PORTFOLIO COMPANY 2
         $comp2 = new PortfolioCompany($tenant, 'BioTech Solutions');
         $this->entityManager->persist($comp2);
         $this->createRequirement($comp2, 'arr');
@@ -98,50 +104,22 @@ class SetupDevDataCommand extends Command
         $this->entityManager->persist($rev2B);
         $claim2->setActiveRevisionId($rev2B->getId());
 
-        // 6. Portfolio Company 3: Partially missing data
-        $comp3 = new PortfolioCompany($tenant, 'CryptoPay Ledger');
-        $this->entityManager->persist($comp3);
-        $this->createRequirement($comp3, 'arr');
-        $this->createRequirement($comp3, 'headcount');
-
-        $claim3 = new PortfolioClaim($tenant, $comp3, 'arr', '2026-Q3');
-        $claim3->setStatus('staged');
-        $this->entityManager->persist($claim3);
-        $rev3 = new ClaimRevision($claim3, $sourceA, 310000.00, 'ai_claude');
-        $this->entityManager->persist($rev3);
-        $claim3->setActiveRevisionId($rev3->getId());
-
-        // ==========================================
-        // MOCK DATA FOR DEALFLOW (KANBAN)
-        // ==========================================
-
-        // Deal 1: Stage 'mapped' (Entered 2 days ago)
+        // 7. DATA FOR DEALFLOW (КАНБАН)
         $deal1 = new Deal($tenant, 'Solaris Energy Grid');
         $deal1->setStatus('mapped');
         $deal1->setAmountSought(500000.00);
-        $deal1->setCustomValue('sector', 'CleanTech');
         $this->entityManager->persist($deal1);
         $this->createStageEventInPast($deal1, 'mapped', '-2 days');
 
-        // Deal 2: Stage 'to_analyse' (Entered 7 days ago)
         $deal2 = new Deal($tenant, 'Nova Core CyberSec');
         $deal2->setStatus('to_analyse');
         $deal2->setAmountSought(1200000.00);
-        $deal2->setCustomValue('sector', 'SaaS / Security');
         $this->entityManager->persist($deal2);
         $this->createStageEventInPast($deal2, 'to_analyse', '-7 days');
 
-        // Deal 3: Stage 'due_diligence' (Entered 14 days ago)
-        $deal3 = new Deal($tenant, 'Apex Quantum Computing');
-        $deal3->setStatus('due_diligence');
-        $deal3->setAmountSought(4500000.00);
-        $deal3->setCustomValue('sector', 'DeepTech');
-        $this->entityManager->persist($deal3);
-        $this->createStageEventInPast($deal3, 'due_diligence', '-14 days');
-
         $this->entityManager->flush();
 
-        $output->writeln('<info>Success! Advanced UI test environment seeded with Portfolio and Dealflow datasets.</info>');
+        $output->writeln('<info>Success! End-to-end dataset with Founder credentials deployed.</info>');
         return Command::SUCCESS;
     }
 
@@ -152,16 +130,16 @@ class SetupDevDataCommand extends Command
         $this->entityManager->persist($req);
     }
 
+    /**
+     * @throws DateMalformedStringException
+     */
     private function createStageEventInPast(Deal $deal, string $stage, string $timeModifier): void
     {
         $event = new StageEvent($deal, $stage);
-
-        // Simulate real past date for stage event to test days counter
         $pastDate = (new \DateTimeImmutable())->modify($timeModifier);
         $reflection = new \ReflectionClass($event);
         $property = $reflection->getProperty('enteredAt');
         $property->setValue($event, $pastDate);
-
         $this->entityManager->persist($event);
     }
 }

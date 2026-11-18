@@ -37,6 +37,7 @@ security:
             pattern: ^/founder
             lazy: true
             provider: founder_provider
+            context: founder_session_context
             custom_authenticator: DealVault\Identity\Security\FounderAuthenticator
             logout:
                 path: founder_logout
@@ -45,6 +46,7 @@ security:
             pattern: ^/
             lazy: true
             provider: staff_provider
+            context: staff_session_context
             form_login:
                 login_path: staff_login
                 check_path: staff_login

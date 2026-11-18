@@ -132,4 +132,9 @@ class IngestionSource implements TenantAwareInterface
 
         return $this;
     }
+
+    public function getCreatedAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
 }

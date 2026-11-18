@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="{{ app.request.locale }}">
+    <head>
+        <meta charset="UTF-8">
+        <title>Founder Secure Reporting Portal - DealVault</title>
+        {{ importmap('app') }}
+    </head>
+    <body style="display: block; background-color: var(--bg-main);">
+        <div class="founder-container">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; border-bottom: 1px solid var(--border-color); padding-bottom: 20px;">
+                <div>
+                    <h1 style="margin: 0; font-size: 1.25rem; font-weight: 800; letter-spacing: 0.05em;">DEALVAULT // FOUNDER PORTAL</h1>
+                    <div class="dashboard-toolbar-label" style="margin-top: 4px;">Secure Ingestion Channel for Authorized Portfolio Companies</div>
+                </div>
+                <a href="{{ path('founder_logout') }}" class="input-elevation-2" style="text-decoration: none; font-size: 0.8rem; font-weight: bold; color: var(--color-conflicting); border-color: var(--color-conflicting);">
+                    Logout
+                </a>
+            </div>
+
+            {{ component('founder_upload') }}
+        </div>
+    </body>
+</html>
