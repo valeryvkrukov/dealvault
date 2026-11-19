@@ -5,65 +5,95 @@ namespace DealVault\Ingestion\MessageHandler;
 use DealVault\Identity\Entity\Tenant;
 use DealVault\Ingestion\Entity\IngestionSource;
 use DealVault\Ingestion\Message\ProcessDocumentCommand;
+use DealVault\Ingestion\Service\AiReportParser;
+use DealVault\Portfolio\Entity\PortfolioCompany;
+use DealVault\ReviewQueue\Entity\ClaimRevision;
+use DealVault\ReviewQueue\Entity\PortfolioClaim;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Exception\ORMException;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]
 class ProcessDocumentHandler
 {
     private EntityManagerInterface $entityManager;
+    private AiReportParser $aiParser;
     private string $storageDir;
 
-    public function __construct(EntityManagerInterface $entityManager, string $storageDir)
-    {
+    public function __construct(
+        EntityManagerInterface $entityManager,
+        AiReportParser $aiParser,
+        string $storageDir
+    ) {
         $this->entityManager = $entityManager;
-        $this->storageDir = $storageDir . '/var/storage';
+        $this->aiParser = $aiParser;
+        $this->storageDir = $storageDir;
     }
 
-    /**
-     * @throws ORMException
-     */
     public function __invoke(ProcessDocumentCommand $command): void
     {
-        if (!file_exists($command->getUploadedFilePath())) {
+        // 1. Imitation of reading text from PDF/Excel (in production it will be pdftotext/SpreadsheetReader)
+        // Simulate reading for demonstration purposes
+        $mockExtractedText = "SpaceX financial review. Current ARR reached 45,000,000 USD this quarter. Total headcount is 820 employees working full-time.";
+
+        // 2. Call our Symfony AI service
+        $dto = $this->aiParser->parseDocumentText($mockExtractedText);
+
+        // Find the company for the current context
+        $companyRepository = $this->entityManager->getRepository(PortfolioCompany::class);
+        $company = $companyRepository->findOneBy(['tenant' => $command->getTenantId()]);
+
+        if (!$company) {
             return;
         }
 
-        // Calculate SHA256 hash for 100% idempotency and deduplication
-        $sha256 = hash_file('sha256', $command->getUploadedFilePath());
+        // Source (uploaded file)
+        $sourceRepository = $this->entityManager->getRepository(IngestionSource::class);
+        $source = $sourceRepository->findOneBy(['fileName' => $command->getFileName()]);
 
-        // Check if current tenant already uploaded a same document earlier
-        $existingSource = $this->entityManager->getRepository(IngestionSource::class)->findOneBy([
-            'tenant' => $command->getTenantId(),
-            'sha256' => $sha256,
+        if (!$source) {
+            return;
+        }
+
+        // 3. Automatically save extracted AI data to the database (Section 2: Human-in-the-loop / Staged)
+        if ($dto->arr !== null) {
+            $this->saveMetricClaim($command->getTenantId(), $company, $source, 'arr', $dto->arr, $dto->arrEvidence, $dto->currency);
+        }
+
+        if ($dto->headcount !== null) {
+            $this->saveMetricClaim($command->getTenantId(), $company, $source, 'headcount', (float)$dto->headcount, $dto->headcountEvidence, $dto->currency);
+        }
+
+        // Change the status of the source to "extracted"
+        $source->setStatus('extracted');
+        $this->entityManager->flush();
+    }
+
+    private function saveMetricClaim($tenant, $company, $source, string $metricName, float $value, ?string $evidence, string $currency): void
+    {
+        // Find if there is already a claim for this period
+        $claimRepository = $this->entityManager->getRepository(PortfolioClaim::class);
+        $claim = $claimRepository->findOneBy([
+            'company' => $company->getId(),
+            'metricName' => $metricName,
+            'period' => '2026-Q3'
         ]);
 
-        // If document already exists finish without further processing (Incremental ingesting)
-        if ($existingSource != null) {
-            unlink($command->getUploadedFilePath());
-            return;
+        if (!$claim) {
+            $tenantEntity = $this->entityManager->getRepository(Tenant::class)->find($tenant);
+            $claim = new PortfolioClaim($tenantEntity, $company, $metricName, '2026-Q3');
+            $this->entityManager->persist($claim);
         }
 
-        $tenantReference = $this->entityManager->getReference(Tenant::class, $command->getTenantId());
-        $source = new IngestionSource($tenantReference, 'file');
-        $source->setSha256($sha256);
-        $source->setFileName($command->getFileName());
+        // If data is coming from AI — status strictly 'staged' (waiting for human review in Review Queue)
+        $claim->setStatus('staged');
+        $claim->setCurrency($currency);
 
-        // Create target directory if it does not exist
-        if (!is_dir($this->storageDir)) {
-            mkdir($this->storageDir, 0755, true);
-        }
+        $revision = new ClaimRevision($claim, $source, $value, 'ai_claude');
+        $revision->setSourceLocatorExcerpt($evidence ?? 'Extracted automatically via Symfony AI component.');
+        $this->entityManager->persist($revision);
+        $this->entityManager->flush();
 
-        $finalPath = $this->storageDir . '/' . $sha256;
-
-        // Move file to the permanent storage directory/isolated storage
-        if (rename($command->getUploadedFilePath(), $finalPath)) {
-            $source->setStoragePath($finalPath);
-            $source->setStatus('pending');
-
-            $this->entityManager->persist($source);
-            $this->entityManager->flush();
-        }
+        $claim->setActiveRevisionId($revision->getId());
+        $this->entityManager->flush();
     }
 }

@@ -47,3 +47,7 @@ services:
 
     DealVault\Ingestion\Service\MailpitClient:
         public: true
+
+    DealVault\Ingestion\Service\AiReportParser:
+        arguments:
+            $apiKey: '%env(ANTHROPIC_API_KEY)%'
